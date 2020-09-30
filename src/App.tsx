@@ -14,7 +14,8 @@ function App() {
         justifyContent: "center",
       }}
     >
-      <Board showMST={true} rows={8} columns={8} />
+      {/* rows and columns must be uneven */}
+      <Board showMST={true} rows={9} columns={9} />
     </div>
   )
 }
@@ -26,117 +27,43 @@ function Board({ rows, columns }: any) {
         height: "100vmin",
         width: "100vmin",
         position: "relative",
+        backgroundColor: "#222222",
+        boxShadow: "0 10px 20px -7px #00000044",
         transform: "rotateX(60deg) rotateY(0deg) rotateZ(-45deg)",
       }}
     >
       {/* Nodes */}
       <div
         style={{
+          padding: "20px",
           position: "absolute",
-          height: "100vmin",
-          width: "100vmin",
+          height: "100%",
+          width: "100%",
           display: "grid",
-          gridTemplateColumns: `repeat(${columns}, 1fr)`,
-          gridTemplateRows: `repeat(${rows}, 1fr)`,
-          gap: "10px",
-          outline: "1px red solid",
+          gridTemplateColumns: [...new Array(columns)]
+            .map((_, i) => (i % 2 == 0 ? "10fr" : "minmax(5px, 1fr)"))
+            .join(" "),
+          gridTemplateRows: [...new Array(rows)]
+            .map((_, i) => (i % 2 == 0 ? "10fr" : "minmax(5px, 1fr)"))
+            .join(" "),
+          alignItems: "center",
+          justifyItems: "center",
+          // gap: "10px",
         }}
       >
-        {[...new Array(rows * columns)].map((_, i) => (
-          <Node key={i} />
-        ))}
-      </div>
-      {/* Edges */}
-      <div
-        style={{
-          position: "absolute",
-          height: "100vmin",
-          width: "100vmin",
-          display: "grid",
-          gridTemplateColumns: `repeat(${columns}, 1fr)`,
-          gridTemplateRows: `repeat(${rows}, 1fr)`,
-          gap: "10px",
-        }}
-      >
-        {[...new Array(1)].map((_, i) => (
-          // {[...new Array(rows * columns)].map((_, i) => (
-          <EdgeContainer>
-            <Edge direction="up" />
-            <Edge direction="down" />
-            <Edge direction="left" />
-            <Edge direction="right" />
-          </EdgeContainer>
-        ))}
+        {[...new Array(rows * columns)].map((_, i) => {
+          const isOddRow = i % (rows * 2) < rows
+          const isOddCol = (i % columns) % 2 == 0
+          if (isOddCol && isOddRow) return <Node key={i} />
+          if (!isOddCol != !isOddRow) {
+            if (isOddCol) return <Edge key={i} vertical={true} />
+            return <Edge key={i} vertical={false} />
+          }
+          return <Gap key={i} />
+        })}
       </div>
     </div>
   )
-}
-
-function EdgeContainer({ children }) {
-  return (
-    <div
-      style={{
-        position: "relative",
-      }}
-    >
-      {children}
-    </div>
-  )
-}
-
-function Edge({ direction }) {
-  const dirToCSSDir = {
-    up: "top",
-    down: "bottom",
-    left: "left",
-    right: "right",
-  }
-
-  const dirToColor = {
-    up: "white",
-    down: "yellow",
-    left: "red",
-    right: "orange",
-  }
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "50%",
-        right: "50%",
-
-        transform: "translate(-50%, -50%)",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          ...(direction === "up" || direction === "down"
-            ? {
-                transform: "translateY(-50%)",
-                width: "200px",
-                height: "10px",
-              }
-            : {
-                transform: "translateX(-50%)",
-                width: "10px",
-                height: "200px",
-              }),
-          [dirToCSSDir[direction]]: "200px",
-          backgroundColor: dirToColor[direction],
-        }}
-      ></div>
-    </div>
-  )
-}
-
-function Row({ children }) {
-  return <div>{children}</div>
 }
 
 function Node() {
@@ -145,7 +72,31 @@ function Node() {
       style={{
         height: "100%",
         width: "100%",
-        backgroundColor: "#eee",
+        backgroundColor: "#383838",
+      }}
+    ></div>
+  )
+}
+
+function Edge({ vertical }) {
+  return (
+    <div
+      className={vertical ? "edgeVertical" : "edgeHorizontal"}
+      style={{
+        height: "100%",
+        width: "100%",
+        backgroundColor: "#2d2d2d",
+      }}
+    ></div>
+  )
+}
+
+function Gap() {
+  return (
+    <div
+      style={{
+        height: "100%",
+        width: "100%",
       }}
     ></div>
   )
