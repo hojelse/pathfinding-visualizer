@@ -1,3 +1,11 @@
 .App {
   text-align: center;
 }
+
+.edgeVertical {
+  max-width: 20%;
+}
+
+.edgeHorizontal {
+  max-height: 20%;
+}
