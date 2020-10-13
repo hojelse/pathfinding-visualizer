@@ -1,31 +1,51 @@
-import React, { useState } from "react"
+import React, { useRef, useState, useEffect } from "react"
 import "./App.css"
 
-function App() {
+let App = () => {
+  const meRef = useRef(null) // default value: null
+
+  const [dims, setDims] = useState([0, 0])
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      let entry = entries[0]
+      const { width, height } = entry.contentRect
+      setDims([width, height])
+    })
+    let me = meRef.current
+    if (me) resizeObserver.observe(me)
+    return () => me && resizeObserver.unobserve(me)
+  }, [meRef.current])
+
   return (
     <div
+      ref={meRef}
       className="App"
       style={{
         width: "100vw",
         height: "100vh",
         display: "flex",
         alignItems: "center",
+        flexDirection: "column",
         justifyContent: "center",
       }}
     >
       {/* rows and columns must be uneven */}
-      <Board showMST={true} rows={9} columns={9} />
+      <Board dims={dims} showMST={true} rows={9} columns={9} />
     </div>
   )
 }
 
-function Board({ rows, columns }: any) {
+function Board({ rows, columns, dims }: any) {
+  const minDim = Math.min(dims[0], dims[1])
+
   return (
     <div
       style={{
-        height: "100vmin",
-        width: "100vmin",
+        height: `${minDim}px`,
+        width: `${minDim}px`,
         position: "relative",
+        flexShrink: 0,
+        flexGrow: 0,
         backgroundColor: "#222222",
         boxShadow: "0 10px 20px -7px #00000044",
         transform: "rotateX(60deg) rotateY(0deg) rotateZ(-45deg)",
@@ -40,10 +60,10 @@ function Board({ rows, columns }: any) {
           width: "100%",
           display: "grid",
           gridTemplateColumns: [...new Array(columns)]
-            .map((_, i) => (i % 2 == 0 ? "10fr" : "minmax(5px, 1fr)"))
+            .map((_, i) => (i % 2 === 0 ? "10fr" : "minmax(5px, 1fr)"))
             .join(" "),
           gridTemplateRows: [...new Array(rows)]
-            .map((_, i) => (i % 2 == 0 ? "10fr" : "minmax(5px, 1fr)"))
+            .map((_, i) => (i % 2 === 0 ? "10fr" : "minmax(5px, 1fr)"))
             .join(" "),
           alignItems: "center",
           justifyItems: "center",
@@ -52,9 +72,9 @@ function Board({ rows, columns }: any) {
       >
         {[...new Array(rows * columns)].map((_, i) => {
           const isOddRow = i % (rows * 2) < rows
-          const isOddCol = (i % columns) % 2 == 0
+          const isOddCol = (i % columns) % 2 === 0
           if (isOddCol && isOddRow) return <Node key={i} />
-          if (!isOddCol != !isOddRow) {
+          if (!isOddCol !== !isOddRow) {
             if (isOddCol) return <Edge key={i} vertical={true} />
             return <Edge key={i} vertical={false} />
           }
@@ -65,9 +85,10 @@ function Board({ rows, columns }: any) {
   )
 }
 
-function Node() {
+function Node(props) {
   return (
     <div
+      {...props}
       style={{
         height: "100%",
         width: "100%",
