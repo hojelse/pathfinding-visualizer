@@ -24,8 +24,10 @@
   fill: white;
   stroke: var(--main-bg-color);
   stroke-width: 2;
+  pointer-events: all;
+  transition: r 0.1s ease-in-out;
 }
 
-.vertex:nth-child(2) {
-  transform: scale(2);
+.vertex:hover {
+  r: 3;
 }
