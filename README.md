@@ -1,5 +1,5 @@
 
-## `npm i`
+### `npm i`
 in root to install dependancies
 
 ## Available Scripts
