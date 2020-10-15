@@ -27,8 +27,6 @@ let GraphTracer = () => {
   let graph = new UndirectedGraph(vertexPoints.length)
   relations.map((relation) => graph.addEdge(relation.a, relation.b))
 
-  let DOMEdges = createDOMEdges(graph, vertexPoints)
-
   return (
     <svg
       viewBox="-100 -100 200 200"
@@ -38,12 +36,23 @@ let GraphTracer = () => {
         border: "1px solid white",
       }}
     >
-      {[...DOMEdges]}
-      {[...vertexPoints].map((point, i) => {
-        return <circle className="vertex" cx={point.x} cy={point.y} />
-      })}
+      {[...createDOMEdges(graph, vertexPoints)]}
+      {[...createDOMVertices(vertexPoints)]}
     </svg>
   )
+}
+
+let Edge = (props) => {
+  return (
+    <path
+      className="edge"
+      d={`M${props.from.x},${props.from.y} L ${props.to.x},${props.to.y}`}
+    />
+  )
+}
+
+let Vertex = (props) => {
+  return <circle className="vertex" cx={props.point.x} cy={props.point.y} />
 }
 
 export default App
@@ -75,6 +84,10 @@ const relationsForSquareLattice3x3 = [
   { a: 7, b: 8 },
 ]
 
+function createDOMVertices(vertexPoints: { x: number; y: number }[]) {
+  return vertexPoints.map((point) => <Vertex point={point}></Vertex>)
+}
+
 function* createDOMEdges(
   graph: UndirectedGraph,
   vertexPositions: { x: number; y: number }[]
@@ -83,9 +96,7 @@ function* createDOMEdges(
     for (const edge of graph.getNeigborhoodOf(i)) {
       let from = vertexPositions[edge.from]
       let to = vertexPositions[edge.to]
-      yield (
-        <path className="edge" d={`M${from.x},${from.y} L ${to.x},${to.y}`} />
-      )
+      yield (<Edge from={from} to={to} />)
     }
   }
 }
