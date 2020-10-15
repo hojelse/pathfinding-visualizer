@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from "react"
 import "./App.css"
-import { Edge } from "./Dijkstra/Edge"
-import { Graph } from "./Dijkstra/Graph"
+import { Dijkstra } from "./Dijkstra/Dijkstra"
 import { UndirectedGraph } from "./Dijkstra/UndirectedGraph"
 
 let App = () => {
@@ -22,27 +21,13 @@ let App = () => {
 }
 
 let GraphTracer = () => {
-  let n = 3;
+  let vertexPoints = squareLattice3x3
+  let relations = relationsForSquareLattice3x3
 
-  let graph = new UndirectedGraph(n);
-  graph.addEdge(0, 1);
-  graph.addEdge(0, 2);
-  graph.addEdge(1, 2);
+  let graph = new UndirectedGraph(vertexPoints.length)
+  relations.map((relation) => graph.addEdge(relation.a, relation.b))
 
-
-  let vertexPositions = [
-    { x: 0, y: 0 },
-    { x: 30, y: 0 },
-    { x: 30, y: 40 },
-  ]
-
-  for (let i = 0; i < n; i++) {
-    for (const edge of graph.getNeigborhoodOf(i)) {
-      let from = vertexPositions[edge.from];
-      let to = vertexPositions[edge.to];
-      return <path className="edge" d={`M${from.x},${from.y} L ${to.x},${to.y}`} />
-    }
-  }
+  let DOMEdges = createDOMEdges(graph, vertexPoints)
 
   return (
     <svg
@@ -53,10 +38,8 @@ let GraphTracer = () => {
         border: "1px solid white",
       }}
     >
-      <path className="edge" d="M0,0 L 30,0" />
-      <path className="edge" d="M30,0 L 30,40" />
-      <path className="edge" d="M30,40 L 0,0" />
-      {[...vertexPositions].map((point, i) => {
+      {[...DOMEdges]}
+      {[...vertexPoints].map((point, i) => {
         return <circle className="vertex" cx={point.x} cy={point.y} />
       })}
     </svg>
@@ -64,3 +47,45 @@ let GraphTracer = () => {
 }
 
 export default App
+
+const squareLattice3x3 = [
+  { x: -50, y: -50 },
+  { x: 0, y: -50 },
+  { x: 50, y: -50 },
+  { x: -50, y: 0 },
+  { x: 0, y: 0 },
+  { x: 50, y: 0 },
+  { x: -50, y: 50 },
+  { x: 0, y: 50 },
+  { x: 50, y: 50 },
+]
+
+const relationsForSquareLattice3x3 = [
+  { a: 0, b: 1 },
+  { a: 1, b: 2 },
+  { a: 0, b: 3 },
+  { a: 1, b: 4 },
+  { a: 2, b: 5 },
+  { a: 3, b: 4 },
+  { a: 4, b: 5 },
+  { a: 3, b: 6 },
+  { a: 4, b: 7 },
+  { a: 5, b: 8 },
+  { a: 6, b: 7 },
+  { a: 7, b: 8 },
+]
+
+function* createDOMEdges(
+  graph: UndirectedGraph,
+  vertexPositions: { x: number; y: number }[]
+) {
+  for (let i = 0; i < vertexPositions.length; i++) {
+    for (const edge of graph.getNeigborhoodOf(i)) {
+      let from = vertexPositions[edge.from]
+      let to = vertexPositions[edge.to]
+      yield (
+        <path className="edge" d={`M${from.x},${from.y} L ${to.x},${to.y}`} />
+      )
+    }
+  }
+}
