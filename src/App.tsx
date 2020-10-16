@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react"
 import "./App.css"
 import { Dijkstra } from "./Dijkstra/Dijkstra"
 import { UndirectedGraph } from "./Dijkstra/UndirectedGraph"
+import { Delaunay } from "d3-delaunay"
 
 let App = () => {
   return (
@@ -20,9 +21,26 @@ let App = () => {
   )
 }
 
+// let Canvas = () => {
+//   const points = [
+//     [0, 0],
+//     [0, 1],
+//     [1, 0],
+//     [1, 1],
+//   ]
+//   const delaunay = Delaunay.from(points)
+//   const voronoi = delaunay.voronoi([0, 0, 960, 500])
+
+//   var canvas = document.getElementById("canvas") as HTMLCanvasElement
+//   var context = canvas.getContext("2d")
+//   delaunay.render([context])
+
+//   return <canvas id="canvas"></canvas>
+// }
+
 let GraphTracer = () => {
-  let vertexPoints = squareLattice3x3
-  let relations = relationsForSquareLattice3x3
+  let vertexPoints = hexagonalLattice1
+  let relations = relationsForHexagonalLattice1
 
   let graph = new UndirectedGraph(vertexPoints.length)
   relations.map((relation) => graph.addEdge(relation.a, relation.b))
@@ -56,6 +74,32 @@ let Vertex = (props) => {
 }
 
 export default App
+
+let l = 50
+const hexagonalLattice1 = [
+  { x: -1 * l, y: 0 },
+  { x: 0 * l, y: 0 },
+  { x: 1 * l, y: 0 },
+  { x: -l / 2, y: (l / 2) * Math.sqrt(3) },
+  { x: -l / 2, y: (-l / 2) * Math.sqrt(3) },
+  { x: l / 2, y: (l / 2) * Math.sqrt(3) },
+  { x: l / 2, y: (-l / 2) * Math.sqrt(3) },
+]
+
+const relationsForHexagonalLattice1 = [
+  { a: 1, b: 0 },
+  { a: 1, b: 2 },
+  { a: 1, b: 3 },
+  { a: 1, b: 4 },
+  { a: 1, b: 5 },
+  { a: 1, b: 6 },
+  { a: 0, b: 4 },
+  { a: 4, b: 6 },
+  { a: 6, b: 2 },
+  { a: 0, b: 3 },
+  { a: 3, b: 5 },
+  { a: 5, b: 2 },
+]
 
 const squareLattice3x3 = [
   { x: -50, y: -50 },
