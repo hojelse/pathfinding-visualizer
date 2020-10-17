@@ -1,8 +1,15 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  MutableRefObject,
+  Component,
+} from "react"
 import "./App.css"
 import { Dijkstra } from "./Dijkstra/Dijkstra"
 import { UndirectedGraph } from "./Dijkstra/UndirectedGraph"
 import { Delaunay } from "d3-delaunay"
+import * as d3 from "d3"
 
 let App = () => {
   return (
@@ -16,9 +23,69 @@ let App = () => {
         padding: "100px",
       }}
     >
-      <GraphTracer></GraphTracer>
+      <BarChart></BarChart>
     </div>
   )
+}
+
+class BarChart extends Component {
+  myRef: React.RefObject<any>
+
+  constructor(props) {
+    super(props)
+    this.myRef = React.createRef()
+  }
+
+  render() {
+    return (
+      <>
+        <canvas ref={this.myRef} width="1000" height="1000"></canvas>
+      </>
+    )
+  }
+
+  componentDidMount() {
+    const points = [[250, 250]]
+    for (let i = 0; i < 100; i++) {
+      points.push([
+        Math.floor(Math.random() * 1000),
+        Math.floor(Math.random() * 1000),
+      ])
+    }
+
+    const delaunay = Delaunay.from(points)
+    const voronoi = delaunay.voronoi([0, 0, 1000, 1000])
+
+    const context = this.myRef.current.getContext("2d")
+
+    // Voronoi diagram
+    // == Borders ==
+    context.beginPath()
+    delaunay.renderPoints(context)
+    context.fillStyle = "white"
+    context.fill()
+
+    // == Points ==
+    context.beginPath()
+    voronoi.render(context)
+    context.strokeStyle = "grey"
+    context.stroke()
+
+    // Delaunay triangulation (graph)
+    context.globalCompositeOperation = "darken"
+    context.beginPath()
+    delaunay.renderPoints(context)
+    context.fillStyle = "grey"
+    context.fill()
+    context.strokeStyle = "white"
+    for (let i = 0, n = delaunay.triangles.length / 3; i < n; ++i) {
+      context.beginPath()
+      delaunay.renderTriangle(i, context)
+      context.stroke()
+    }
+
+    return context.canvas
+  }
 }
 
 // let Canvas = () => {
@@ -31,11 +98,17 @@ let App = () => {
 //   const delaunay = Delaunay.from(points)
 //   const voronoi = delaunay.voronoi([0, 0, 960, 500])
 
-//   var canvas = document.getElementById("canvas") as HTMLCanvasElement
-//   var context = canvas.getContext("2d")
-//   delaunay.render([context])
+//   const canvasRef = React.useRef(null)
+//   useEffect(() => {
+//     let canvas = canvasRef.current
+//     var context = canvas.getContext("2d")
+//     delaunay.render(context)
+//     delaunay.renderPoints(context)
+//   })
 
-//   return <canvas id="canvas"></canvas>
+//   return (
+//     <canvas ref={canvasRef} height="500px" width="500px" id="canvas"></canvas>
+//   )
 // }
 
 let GraphTracer = () => {
