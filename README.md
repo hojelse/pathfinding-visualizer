@@ -14,10 +14,9 @@ Dijkstra [Wikipedia](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
 
 A* [Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
 
-### `npm i`
-in root to install dependancies
-
 ## Available Scripts
+
+Clone this repository and `npm i` in root to install dependancies
 
 In the project directory, you can run:
 
