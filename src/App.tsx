@@ -10,106 +10,104 @@ import { Dijkstra } from "./Dijkstra/Dijkstra"
 import { UndirectedGraph } from "./Dijkstra/UndirectedGraph"
 import { Delaunay } from "d3-delaunay"
 import * as d3 from "d3"
+import "codemirror/lib/codemirror.css"
+import "codemirror/theme/material.css"
+import "codemirror/mode/javascript/javascript"
+import { Controlled as ControlledCodeTracer } from "react-codemirror2"
 
 let App = () => {
+  const [js, setJs] = useState("")
+
   return (
     <div
       style={{
         width: "100vw",
         height: "100vh",
         display: "flex",
-        alignItems: "center",
+        flexDirection: "row",
+        alignItems: "stretch",
         justifyContent: "center",
-        padding: "100px",
+        padding: "20px",
       }}
     >
-      <BarChart></BarChart>
+      <GraphTracer></GraphTracer>
+      <CodeTracer
+        language="javascript"
+        value={js}
+        contentSetter={setJs}
+        onChange={setJs}
+      ></CodeTracer>
     </div>
   )
 }
 
-class BarChart extends Component {
-  myRef: React.RefObject<any>
+let CodeTracer = (props) => {
+  const { language, value, contentSetter, onChange } = props
 
-  constructor(props) {
-    super(props)
-    this.myRef = React.createRef()
+  function handleChange(editor, data, value) {
+    // onChange(value)
   }
 
-  render() {
-    return (
-      <>
-        <canvas ref={this.myRef} width="1000" height="1000"></canvas>
-      </>
-    )
-  }
+  contentSetter(dijkstraCode)
 
-  componentDidMount() {
-    const points = [[250, 250]]
-    for (let i = 0; i < 100; i++) {
-      points.push([
-        Math.floor(Math.random() * 1000),
-        Math.floor(Math.random() * 1000),
-      ])
-    }
-
-    const delaunay = Delaunay.from(points)
-    const voronoi = delaunay.voronoi([0, 0, 1000, 1000])
-
-    const context = this.myRef.current.getContext("2d")
-
-    // Voronoi diagram
-    // == Borders ==
-    context.beginPath()
-    delaunay.renderPoints(context)
-    context.fillStyle = "white"
-    context.fill()
-
-    // == Points ==
-    context.beginPath()
-    voronoi.render(context)
-    context.strokeStyle = "grey"
-    context.stroke()
-
-    // Delaunay triangulation (graph)
-    context.globalCompositeOperation = "darken"
-    context.beginPath()
-    delaunay.renderPoints(context)
-    context.fillStyle = "grey"
-    context.fill()
-    context.strokeStyle = "white"
-    for (let i = 0, n = delaunay.triangles.length / 3; i < n; ++i) {
-      context.beginPath()
-      delaunay.renderTriangle(i, context)
-      context.stroke()
-    }
-
-    return context.canvas
-  }
+  return (
+    <div className="editor-container">
+      <ControlledCodeTracer
+        onBeforeChange={handleChange}
+        value={value}
+        className="code-mirror-wrapper"
+        options={{
+          lineWrapping: true,
+          lint: true,
+          mode: language,
+          theme: "material",
+          lineNumbers: true,
+        }}
+      />
+      <DebuggerInterface />
+    </div>
+  )
 }
 
-// let Canvas = () => {
-//   const points = [
-//     [0, 0],
-//     [0, 1],
-//     [1, 0],
-//     [1, 1],
-//   ]
-//   const delaunay = Delaunay.from(points)
-//   const voronoi = delaunay.voronoi([0, 0, 960, 500])
+let DebuggerInterface = () => {
+  const [playing, setPlaying] = React.useState(false)
+  const [step, setStep] = React.useState(5)
+  const [steps, setSteps] = React.useState(10)
 
-//   const canvasRef = React.useRef(null)
-//   useEffect(() => {
-//     let canvas = canvasRef.current
-//     var context = canvas.getContext("2d")
-//     delaunay.render(context)
-//     delaunay.renderPoints(context)
-//   })
+  let handleInputChange = (evt) => {
+    setStep(evt.currentTarget.value)
+  }
 
-//   return (
-//     <canvas ref={canvasRef} height="500px" width="500px" id="canvas"></canvas>
-//   )
-// }
+  let handlePlay = () => {
+    setPlaying(!playing)
+  }
+
+  return (
+    <>
+      <div className="debugger-interface">
+        <button onClick={handlePlay} className="debugger-button">
+          {playing ? "pause" : "play"}
+        </button>
+        <input
+          className="debugger-scrubber"
+          onInput={handleInputChange}
+          type="range"
+          value={step}
+          min="1"
+          max={steps}
+        />
+        <button className="debugger-button">
+          Step {step} / {steps}
+        </button>
+      </div>
+      <div className="debugger-interface">
+        <button className="debugger-button">step-over</button>
+        <button className="debugger-button">step-into</button>
+        <button className="debugger-button">step-out</button>
+      </div>
+    </>
+  )
+}
 
 let GraphTracer = () => {
   let vertexPoints = hexagonalLattice1
@@ -124,6 +122,7 @@ let GraphTracer = () => {
       style={{
         height: "100%",
         width: "100%",
+        flexGrow: 1,
         border: "1px solid white",
       }}
     >
@@ -144,6 +143,72 @@ let Edge = (props) => {
 
 let Vertex = (props) => {
   return <circle className="vertex" cx={props.point.x} cy={props.point.y} />
+}
+
+class GraphTracerDelaunayVoronoi extends Component {
+  myRef: React.RefObject<any>
+
+  constructor(props) {
+    super(props)
+    this.myRef = React.createRef()
+  }
+
+  render() {
+    return (
+      <>
+        <canvas ref={this.myRef} width="1000" height="1000"></canvas>
+      </>
+    )
+  }
+
+  componentDidMount() {
+    const points = []
+    // for (let i = 0; i < 100; i++) {
+    //   points.push([
+    //     Math.floor(Math.random() * 1000),
+    //     Math.floor(Math.random() * 1000),
+    //   ])
+    // }
+
+    for (let i = 0; i < 1000; i += 100) {
+      for (let j = 0; j < 1000; j += 100) {
+        points.push([i, j])
+      }
+    }
+
+    const delaunay = Delaunay.from(points)
+    const voronoi = delaunay.voronoi([0, 0, 1000, 1000])
+
+    const context = this.myRef.current.getContext("2d")
+
+    // Voronoi diagram
+    // == Points ==
+    context.beginPath()
+    delaunay.renderPoints(context)
+    context.fillStyle = "white"
+    context.fill()
+
+    // == Border ==
+    context.beginPath()
+    voronoi.render(context)
+    context.strokeStyle = "grey"
+    context.stroke()
+
+    // Delaunay triangulation (graph)
+    context.globalCompositeOperation = "darken"
+    context.beginPath()
+    delaunay.renderPoints(context)
+    context.fillStyle = "grey"
+    context.fill()
+    context.strokeStyle = "white"
+    for (let i = 0, n = delaunay.triangles.length / 3; i < n; ++i) {
+      context.beginPath()
+      delaunay.renderTriangle(i, context)
+      context.stroke()
+    }
+
+    return context.canvas
+  }
 }
 
 export default App
@@ -217,3 +282,53 @@ function* createDOMEdges(
     }
   }
 }
+
+let dijkstraCode = `export class Dijkstra {
+  distTo: number[];
+  edgeTo: Edge[];
+  pq: MinPQ;
+
+  constructor(graph: Graph, startVertex: number) {
+    this.edgeTo = new Array<Edge>(graph.V);
+    this.distTo = new Array<number>(graph.V);
+    this.pq = new MinPQ(graph.V);
+
+    for (let v = 0; v < graph.V; v++) this.distTo[v] = Infinity;
+    this.distTo[startVertex] = 0;
+
+    this.pq.insert(startVertex, 0);
+    while (!this.pq.isEmpty()) {
+      this.relax(graph, this.pq.popMin());
+    };
+
+  }
+
+  relax(graph: Graph, fromVertex: number) {
+    for (const edge of graph.getNeigborhoodOf(fromVertex)) {
+      let toVertex: number = edge.to;
+      if (this.distTo[toVertex] > this.distTo[fromVertex] + edge.weight) {
+        this.distTo[toVertex] = this.distTo[fromVertex] + edge.weight;
+        this.edgeTo[toVertex] = edge;
+        if (this.pq.contains(toVertex)) this.pq.changeKey(toVertex, this.distTo[toVertex]);
+        else this.pq.insert(toVertex, this.distTo[toVertex]);
+      }
+    }
+  }
+
+  getDistTo(vertex: number): number {
+    return this.distTo[vertex];
+  }
+
+  hasPathTo(vertex: number) {
+    return this.distTo[vertex] < Infinity;
+  }
+
+  getPathTo(vertex: number): Array<Edge> {
+    if (!this.hasPathTo(vertex)) return null;
+    let path = new Array<Edge>();
+    for (let edge = this.edgeTo[vertex]; edge != null; edge = this.edgeTo[edge.from]) {
+      path.push(edge);
+    }
+    return path;
+  }
+}`

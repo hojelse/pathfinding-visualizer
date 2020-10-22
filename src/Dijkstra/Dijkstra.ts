@@ -7,14 +7,11 @@ export class Dijkstra {
   distTo: number[];
   edgeTo: Edge[];
   pq: MinPQ;
-  history: DijkstraState[];
 
   constructor(graph: Graph, startVertex: number) {
     this.edgeTo = new Array<Edge>(graph.V);
     this.distTo = new Array<number>(graph.V);
     this.pq = new MinPQ(graph.V);
-    this.history = [];
-    this.writeToHistory();
 
     for (let v = 0; v < graph.V; v++) this.distTo[v] = Infinity;
     this.distTo[startVertex] = 0;
@@ -22,9 +19,7 @@ export class Dijkstra {
     this.pq.insert(startVertex, 0);
     while (!this.pq.isEmpty()) {
       this.relax(graph, this.pq.popMin());
-      this.writeToHistory();
     };
-    console.log(this.history);
 
   }
 
@@ -55,23 +50,5 @@ export class Dijkstra {
       path.push(edge);
     }
     return path;
-  }
-
-  writeToHistory() {
-    let state = new DijkstraState(this.distTo, this.edgeTo, this.pq);
-    this.history.push(state);
-  }
-
-}
-
-class DijkstraState {
-  distTo: number[];
-  edgeTo: Edge[];
-  pq: MinPQ;
-
-  constructor(distTo: number[], edgeTo: Edge[], pq: MinPQ) {
-    this.distTo = distTo;
-    this.edgeTo = edgeTo;
-    this.pq = pq;
   }
 }
