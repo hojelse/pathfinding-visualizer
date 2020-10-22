@@ -1,7 +1,3 @@
-```
-this project is in progress
-```
-
 # Pathfinding visualization
 
 A visualization website for pathfinding algorithms
