@@ -8,8 +8,6 @@ import React, {
 import "./App.css"
 import { Dijkstra } from "./Dijkstra/Dijkstra"
 import { UndirectedGraph } from "./Dijkstra/UndirectedGraph"
-import { Delaunay } from "d3-delaunay"
-import * as d3 from "d3"
 import "codemirror/lib/codemirror.css"
 import "codemirror/theme/material.css"
 import "codemirror/mode/javascript/javascript"
@@ -143,72 +141,6 @@ let Edge = (props) => {
 
 let Vertex = (props) => {
   return <circle className="vertex" cx={props.point.x} cy={props.point.y} />
-}
-
-class GraphTracerDelaunayVoronoi extends Component {
-  myRef: React.RefObject<any>
-
-  constructor(props) {
-    super(props)
-    this.myRef = React.createRef()
-  }
-
-  render() {
-    return (
-      <>
-        <canvas ref={this.myRef} width="1000" height="1000"></canvas>
-      </>
-    )
-  }
-
-  componentDidMount() {
-    const points = []
-    // for (let i = 0; i < 100; i++) {
-    //   points.push([
-    //     Math.floor(Math.random() * 1000),
-    //     Math.floor(Math.random() * 1000),
-    //   ])
-    // }
-
-    for (let i = 0; i < 1000; i += 100) {
-      for (let j = 0; j < 1000; j += 100) {
-        points.push([i, j])
-      }
-    }
-
-    const delaunay = Delaunay.from(points)
-    const voronoi = delaunay.voronoi([0, 0, 1000, 1000])
-
-    const context = this.myRef.current.getContext("2d")
-
-    // Voronoi diagram
-    // == Points ==
-    context.beginPath()
-    delaunay.renderPoints(context)
-    context.fillStyle = "white"
-    context.fill()
-
-    // == Border ==
-    context.beginPath()
-    voronoi.render(context)
-    context.strokeStyle = "grey"
-    context.stroke()
-
-    // Delaunay triangulation (graph)
-    context.globalCompositeOperation = "darken"
-    context.beginPath()
-    delaunay.renderPoints(context)
-    context.fillStyle = "grey"
-    context.fill()
-    context.strokeStyle = "white"
-    for (let i = 0, n = delaunay.triangles.length / 3; i < n; ++i) {
-      context.beginPath()
-      delaunay.renderTriangle(i, context)
-      context.stroke()
-    }
-
-    return context.canvas
-  }
 }
 
 export default App
