@@ -33,19 +33,6 @@
   max-width: "50%";
 }
 
-.CodeMirror {
-  /* height: 100% !important; */
-  flex-grow: 1;
-}
-
-.code-mirror-wrapper {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
 .debugger-interface {
   width: 100%;
   display: flex;

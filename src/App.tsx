@@ -8,10 +8,13 @@ import React, {
 import "./App.css"
 import { Dijkstra } from "./Dijkstra/Dijkstra"
 import { UndirectedGraph } from "./Dijkstra/UndirectedGraph"
-import "codemirror/lib/codemirror.css"
-import "codemirror/theme/material.css"
-import "codemirror/mode/javascript/javascript"
-import { Controlled as ControlledCodeTracer } from "react-codemirror2"
+
+import 'prismjs';
+import 'prism-themes';
+// import 'prismjs/themes/prism.css';
+import 'prism-themes/themes/prism-atom-dark.css';
+import CodeSnippet from './code-snippet';
+
 
 let App = () => {
   const [js, setJs] = useState("")
@@ -30,7 +33,7 @@ let App = () => {
     >
       <GraphTracer></GraphTracer>
       <CodeTracer
-        language="javascript"
+        language="java"
         value={js}
         contentSetter={setJs}
         onChange={setJs}
@@ -40,28 +43,9 @@ let App = () => {
 }
 
 let CodeTracer = (props) => {
-  const { language, value, contentSetter, onChange } = props
-
-  function handleChange(editor, data, value) {
-    // onChange(value)
-  }
-
-  contentSetter(dijkstraCode)
 
   return (
     <div className="editor-container">
-      <ControlledCodeTracer
-        onBeforeChange={handleChange}
-        value={value}
-        className="code-mirror-wrapper"
-        options={{
-          lineWrapping: true,
-          lint: true,
-          mode: language,
-          theme: "material",
-          lineNumbers: true,
-        }}
-      />
       <DebuggerInterface />
     </div>
   )
@@ -82,6 +66,9 @@ let DebuggerInterface = () => {
 
   return (
     <>
+      <CodeSnippet language="javascript">
+        {code}
+      </CodeSnippet>
       <div className="debugger-interface">
         <button onClick={handlePlay} className="debugger-button">
           {playing ? "pause" : "play"}
@@ -215,7 +202,7 @@ function* createDOMEdges(
   }
 }
 
-let dijkstraCode = `export class Dijkstra {
+let code = `export class Dijkstra {
   distTo: number[];
   edgeTo: Edge[];
   pq: MinPQ;
@@ -232,7 +219,6 @@ let dijkstraCode = `export class Dijkstra {
     while (!this.pq.isEmpty()) {
       this.relax(graph, this.pq.popMin());
     };
-
   }
 
   relax(graph: Graph, fromVertex: number) {
@@ -263,4 +249,5 @@ let dijkstraCode = `export class Dijkstra {
     }
     return path;
   }
-}`
+}  
+`
